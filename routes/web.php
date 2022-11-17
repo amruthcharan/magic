@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ShopConfigController;
 use App\Http\Controllers\ShopifyController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,8 @@ Route::group(['middleware' => ['shopify.auth']], function () {
     Route::get('/', [ShopifyController::class, 'home'])->name('shopify.home');
     Route::get('/generate-token', [ShopifyController::class, 'generateToken'])->name('shopify.generate-token');
     Route::get('/dashboard', [ShopifyController::class, 'dashboard'])->name('shopify.dashboard');
+    Route::get('settings', [ShopConfigController::class, 'showSettings'])->name('shopify.settings.show');
+    Route::post('settings', [ShopConfigController::class, 'updateSettings'])->name('shopify.settings.update');
     Route::post('/logout', [ShopifyController::class, 'logout'])->name('shopify.logout');
 });
 

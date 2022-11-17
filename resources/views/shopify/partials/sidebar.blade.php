@@ -14,8 +14,8 @@
                     <span class="text">Dashboard</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#">
+            <li class="nav-item @if (request()->routeIs('shopify.settings.show')) active @endif">
+                <a href="{{ route('shopify.settings.show') }}">
                     <span class="icon">
                       <i class="lni lni-cog"></i>
                     </span>

@@ -55,6 +55,9 @@ class ShopifyController extends Controller
                     'shopify_url' => $shop_url,
                     'access_token' => $token
                 ]);
+            $shop->settings()->create([
+                'shop_id' => $shop->id
+            ]);
 
             // add event to insert scripts to shopify store
             // event(new \App\Events\Shopify\InstallScripts($shop));
@@ -63,7 +66,7 @@ class ShopifyController extends Controller
             event(new \App\Events\SetupWebhooks($shop));
         }
 
-        session(['shop' => $shop]);
+        authenticateShop($shop);
         return redirect()->route('shopify.dashboard');
     }
 

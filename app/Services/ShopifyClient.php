@@ -20,7 +20,7 @@ class ShopifyClient
     public function __construct(Shop $shop)
     {
         $this->store_url = $shop->shopify_url;
-        $this->api_password = $shop->access_token;
+        $this->api_password = $shop->getAccessToken();
         $this->api_version = env('SHOPIFY_API_VERSION', "2022-10");
         $this->url = "https://{$this->store_url}/admin/api/{$this->api_version}/";
         $this->secret = "";

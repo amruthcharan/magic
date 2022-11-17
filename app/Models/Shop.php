@@ -18,6 +18,20 @@ class Shop extends Model
         'access_token'
     ];
 
+    protected $hidden = [
+        'access_token'
+    ];
+
+    public function getAccessToken()
+    {
+        return $this->access_token;
+    }
+
+    public function settings()
+    {
+        return $this->hasOne(ShopConfig::class);
+    }
+
     public function getName()
     {
         return ucwords(str_replace('-', ' ', str_replace('.myshopify.com', '', $this->shopify_url)));
