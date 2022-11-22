@@ -61,4 +61,45 @@ class ShopifyWebhookController extends Controller
         }
         return response()->json(['success' => true]);
     }
+
+    public function appUninstalled(Request $request, $shopId)
+    {
+        $shop = Shop::find($shopId);
+        if (!$shop) {
+            logger()->error('Shop not found', ['shopId' => $shopId]);
+            return response()->json(['error' => 'Shop not found'], 200);
+        }
+        try {
+            $shop->update(['access_token' => null]);
+            $shop->settings()->update([
+                'is_active' => false,
+                'mp_sdk_script_id' => null,
+                'active_theme_id' => null,
+            ]);
+        } catch (\Exception $e) {
+            logger()->error($e->getMessage());
+        }
+        return response()->json(['success' => true]);
+    }
+
+    public function themeChanged(Request $request, $shopId)
+    {
+        $shop = Shop::find($shopId);
+        if (!$shop) {
+            return response()->json(['error' => 'Shop not found'], 200);
+        }
+        try {
+            $oldTheme = $shop->settings->active_theme_id;
+            $shop->settings()->update([
+                'active_theme_id' => $request->input('id')
+            ]);
+            
+            dispatch(new \App\Jobs\DeleteThemeFiles($shop, $oldTheme));
+            dispatch(new \App\Jobs\UpdateThemeFiles($shop));
+
+        } catch (\Exception $e) {
+            logger()->error($e->getMessage());
+        }
+        return response()->json(['success' => true], 200);
+    }
 }

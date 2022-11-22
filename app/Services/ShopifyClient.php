@@ -15,6 +15,7 @@ class ShopifyClient
     protected $api_version;
     protected $store_url;
     protected $url;
+    protected $shop;
 
     
     public function __construct(Shop $shop)
@@ -24,6 +25,7 @@ class ShopifyClient
         $this->api_version = env('SHOPIFY_API_VERSION', "2022-10");
         $this->url = "https://{$this->store_url}/admin/api/{$this->api_version}/";
         $this->secret = "";
+        $this->shop = $shop;
     }
 
     /**
@@ -50,6 +52,18 @@ class ShopifyClient
         return ;
     }
 
+    public function getWebhooks()
+    {
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "webhooks.json")
+            )->webhooks ?? null;
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+        
+
     public function newWebhook($topic, $address, $format = 'json')
     {
         $webhookData = [
@@ -66,6 +80,137 @@ class ShopifyClient
             );
         } catch (RequestException $exception) {
             throw $exception;
+        }
+    }
+
+    public function deleteWebhook($id)
+    {
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "webhooks/{$id}.json", 'delete')
+            );
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function addFile($file, $path, $theme_id = null)
+    {
+        $theme_id = $theme_id ?? $this->getThemeId();
+        $fileData = (object)[
+            'asset' => [
+                'key' => $path,
+                'value' => $file,
+                'theme_id' => $theme_id
+            ]
+        ];
+
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "themes/{$theme_id}/assets.json", 'put', json_encode($fileData))
+            );
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function deleteFile($path, $theme_id = null)
+    {
+        $theme_id = $theme_id ?? $this->getThemeId();
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "themes/{$theme_id}/assets.json?asset[key]={$path}", 'delete')
+            );
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function getFile($path, $theme_id = null)
+    {
+        $theme_id = $theme_id ?? $this->getThemeId();
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "themes/{$theme_id}/assets.json?asset[key]={$path}")
+            )->asset->value;
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function getScriptTags()
+    {
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "script_tags.json")
+            )->script_tags ?? null;
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function addScriptTag($path, $scope = 'all')
+    {
+        try {
+            $scriptTagData = (object)[
+                'script_tag' => [
+                    'event' => 'onload',
+                    'display_scope' => $scope,
+                    'src' => $path
+                ]
+            ];
+            return $this->parseResponse(
+                $this->request($this->url . "script_tags.json", 'post', json_encode($scriptTagData))
+            )->script_tag->id ?? null;
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function updateScriptTag($id, $path, $scope = 'all')
+    {
+        try {
+            $scriptTagData = (object)[
+                'script_tag' => [
+                    'event' => 'onload',
+                    'display_scope' => $scope,
+                    'src' => $path
+                ]
+            ];
+            return $this->parseResponse(
+                $this->request($this->url . "script_tags/{$id}.json", 'put', json_encode($scriptTagData))
+            );
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function deleteScriptTag($id)
+    {
+        try {
+            return $this->parseResponse(
+                $this->request($this->url . "script_tags/{$id}.json", 'delete')
+            );
+        } catch (RequestException $exception) {
+            throw $exception;
+        }
+    }
+
+    public function getThemeId()
+    {
+        if ( $this->shop->settings->active_theme_id) {
+            return $this->shop->settings->active_theme_id;
+        }
+       
+        $themes = $this->parseResponse(
+            $this->request($this->url . "themes.json")
+        );
+
+        foreach ($themes->themes as $theme) {
+            if ($theme->role == 'main') {
+                $this->shop->settings()->update(['active_theme_id' => $theme->id]);
+                return $theme->id;
+            }
         }
     }
 

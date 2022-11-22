@@ -7,8 +7,10 @@ use App\Services\ShopifyClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class SetupWebhooksListener
+class SetupWebhooksListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public $event;
 
     public function __construct(SetupWebhooks $event)
@@ -18,9 +20,6 @@ class SetupWebhooksListener
 
     public function handle($event)
     {
-        // plugin uninstalled webhook
-
-
         // new checkout webhook
         try {
             (new ShopifyClient($event->shop))->newWebhook(
@@ -37,6 +36,16 @@ class SetupWebhooksListener
             (new ShopifyClient($event->shop))->newWebhook(
                 'customers/create',
                 route('shopify.new-customer', ['shopId' => $event->shop->id])
+            );
+        } catch (\Exception $e) {
+            logger($e->getMessage());
+        }
+
+        // when active theme changed themes/publish
+        try {
+            (new ShopifyClient($event->shop))->newWebhook(
+                'themes/publish',
+                route('shopify.theme-changed', ['shopId' => $event->shop->id])
             );
         } catch (\Exception $e) {
             logger($e->getMessage());

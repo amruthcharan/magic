@@ -24,8 +24,7 @@ class CreateShopConfigsTable extends Migration
             $table->string('identity_url')->nullable();
             $table->string('cookie_key')->nullable();
             $table->integer('cache_time')->default(60);
-            $table->string('default_currency_code')->default('USD');
-            $table->string('default_country_code')->default('US');
+            $table->string('active_theme_id')->nullable();
             $table->integer('id_type')->default(0);
             $table->timestamps();
         });

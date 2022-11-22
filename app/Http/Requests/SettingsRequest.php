@@ -32,8 +32,6 @@ class SettingsRequest extends FormRequest
             'identity_url' => 'required_if:is_identity_enabled,1|nullable|url',
             'cookie_key' => 'string',
             'cache_time' => 'integer',
-            'default_currency_code' => 'required|string',
-            'default_country_code' => 'required|string',
             'id_type' => 'required|integer',
         ];
     }
@@ -43,12 +41,12 @@ class SettingsRequest extends FormRequest
         return [
             'is_active.required' => 'Please select at least one option.',
             'sdk_url.required_if' => 'The sdk_url field is required to enable.',
+            'sdk_url.url' => 'The sdk_url seems to be incorrect.',
             'is_identity_enabled.required' => 'Please select at least one option..',
             'is_idl_aync.required' => 'Please select at least one option.',
             'is_idl_optimised.required' => 'Please select at least one option.',
             'identity_url.required_if' => 'The identity_url field is required to enable IDL.',
-            'default_currency_code.required' => 'The default currency code field is required.',
-            'default_country_code.required' => 'The default country code field is required.',
+            'identity_url.url' => 'The identity_url seems to be incorrect.',
             'id_type.required' => 'Please select at least one option.',
         ];
     }

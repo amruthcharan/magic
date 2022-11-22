@@ -20,10 +20,9 @@ class ShopConfig extends Model
         'identity_url',
         'cookie_key',
         'cache_time',
-        'default_currency_code',
-        'default_country_code',
+        'active_theme_id',
         'id_type',
-
+        'mp_sdk_script_id',
     ];
 
     public function shop()

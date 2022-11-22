@@ -1,0 +1,317 @@
+<script>
+  try {
+    var items = [];
+    {% for product in cart.items %}
+      var item = {
+        index: {{ forloop.index0 }},
+        item_name: "{{ product.title | remove: '"' }}",
+        item_brand: "{{ product.vendor }}",
+        item_category: "{{ product.type }}",
+        price: parseFloat("{{ product.price | money_without_currency}}"),
+        quantity: {{ product.quantity }},
+      }
+      item.item_id = ["{{ product.product_id }}", "{{ product.selected_or_first_available_variant.sku }}", "{{ product.selected_or_first_available_variant.id }}"][window.MP_ID_TYPE];
+      {% if product.tags[0] %} item.item_category2= "{{ product.tags[0] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[1] %} item.item_category3= "{{ product.tags[1] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[2] %} item.item_category4= "{{ product.tags[2] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[3] %} item.item_category5= "{{ product.tags[3] | replace:'"', '\"' }}" {% endif %} 
+      items.push(item);
+    {% endfor %}
+    window._mp_cart = {
+      currency: "{{ cart.currency.iso_code }}",
+      value: parseFloat("{{ cart.total_price | money_without_currency }}"),
+      items: items
+    };
+  } catch(e) {}
+    window._mp.waitUntil(function() { return _mp && _mp.eedlInstance; }, 10000, 100, function () {
+    _mp.eedlInstance().ready();
+      
+      try {
+        var isLoggedIn = {% if customer %} 1 {% else %} 0 {% endif %}
+        if (parseInt(localStorage.getItem('_mp_loggedIn')) != isLoggedIn) {
+          localStorage.setItem('_mp_loggedIn', isLoggedIn)
+          if (isLoggedIn) {
+            var loginPayload = {
+                  'method': 'CUSTOM',
+                  'user.profile.profileID': '{{ customer.id }}'
+              };
+              {% if customer.email %} loginPayload['user.profile.em']= "{{ customer.email }}" {% endif %}
+              {% if customer.phone %} loginPayload['user.profile.ph']= "{{ customer.phone }}" {% endif %}
+              {% if customer.phone %} loginPayload['user.profile.countryCode'] = "{{ customer.phone }}" {% endif %}
+            window._mp.safeExecute('evLogin', function(payload) {
+              eedl('login', payload);
+            })(loginPayload);
+          }
+        }
+      } catch (e) {}
+    
+    window._mp.safeExecute('evPageLoad', function() {
+      var payload = {
+        'page.pageInfo.pageName': document.title,
+        'env.pageUrl': window.location.href,
+        'env.referrer': document.referrer,
+        'env.pathName': window.location.pathname,
+        'env.rs': 'prd',
+      };
+      if (isLoggedIn) {
+        {% assign address = customer.last_order.billing_address | default:customer.default_address %}
+        var user_info = {};
+        {% if customer.id %} user_info.pid= "{{ customer.id}}" {% endif %}
+        {% if customer.email %} user_info.email= "{{ customer.email }}" {% endif %}
+        {% if address.country_code %} user_info.country= "{{ address.country_code }}" {% endif %}
+        {% if address.province %} user_info.state= "{{ address.province }}" {% endif %}
+        {% if address.city %} user_info.city = "{{ address.city }}" {% endif %}
+        {% if address.first_name %} user_info.fName= "{{ address.first_name }}" {% endif %}
+        {% if address.last_name %} user_info.lName= "{{ address.last_name }}" {% endif %}
+        {% if address.zip%} user_info.zip= "{{ address.zip}}" {% endif %}
+        {% if customer.phone %} user_info.phone = "{{ customer.phone }}" {% endif %}
+        eedl('user_info', user_info);
+      }
+      eedl('persist', {key: 'loggedInState', value: !!isLoggedIn});
+      eedl('page_load', payload);
+    })();
+
+{% if template.name == "product" %}
+  try {
+    {% assign v = product.selected_or_first_available_variant %}
+    let item = {
+      item_name: "{{ product.title | replace:'"', '\"' }}",
+      item_brand: "{{ product.vendor | replace:'"', '\"' }}",
+      item_category: "{{ product.type | default:product.tags[0] | replace:'"', '\"' }}",
+      price: parseFloat("{{ v.price | money_without_currency}}"),
+      quantity: 1,
+    }
+    item.item_id = ["{{ product.id }}", "{{ v.sku }}", "{{ v.id }}"][window.MP_ID_TYPE];
+      {% if product.tags[0] %} item.item_category2= "{{ product.tags[0] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[1] %} item.item_category3= "{{ product.tags[1] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[2] %} item.item_category4= "{{ product.tags[2] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[3] %} item.item_category5= "{{ product.tags[3] | replace:'"', '\"' }}" {% endif %}   
+    var data = {
+      currency: "{{ cart.currency.iso_code }}",
+      value: parseFloat({{ v.price | money_without_currency}}),
+      items: [
+        item
+      ]
+    }
+  } catch(e) {}
+  window._mp.safeExecute('evViewItem', function(payload) {
+    eedl('view_item', payload);
+  })(data);
+
+{% elsif template.name == 'index' %}
+  let homePayload = {
+      'page.pageInfo.pageName': document.title,
+      'env.pageUrl': window.location.href,
+      'env.pathName': window.location.pathname,
+      'env.referrer': document.referrer,
+      'store.currency': "{{ shop.currency.iso_code }}",
+    };
+   window._mp.safeExecute('evHomePage', function(payload) {
+    eedl('home_page', payload);
+   })(homePayload);
+{% elsif template.name == 'collection' %}
+  try {
+    var items = [];
+    {% for product in collection.products limit:16 %}
+    {% assign v = product.selected_or_first_available_variant %}
+      var item = {
+        index: {{ forloop.index0 }},
+        item_name: "{{ product.title | remove: '"' }}",
+        item_brand: "{{ product.vendor }}",
+        item_category: "{{ product.type }}",
+        price: parseFloat("{{ product.price | money_without_currency}}"),
+        quantity: 1,
+      }
+      item.item_id = ["{{ product.id }}", "{{ v.sku }}", "{{ v.id }}"][window.MP_ID_TYPE];
+      {% if product.tags[0] %} item.item_category2= "{{ product.tags[0] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[1] %} item.item_category3= "{{ product.tags[1] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[2] %} item.item_category4= "{{ product.tags[2] | replace:'"', '\"' }}" {% endif %}
+      {% if product.tags[3] %} item.item_category5= "{{ product.tags[3] | replace:'"', '\"' }}" {% endif %} 
+      items.push(item);
+    {% endfor %}
+    var data = {
+      item_list_id: "{{ collection.id }}",
+      item_list_name: "{{ collection.title }}",
+      items: items
+    }
+  } catch(e) {}
+  window._mp.safeExecute('evViewItemList', function(payload) {
+    eedl('view_item_list', payload);
+  })(data);
+      
+{% elsif template.name == 'cart' %}
+  window._mp.safeExecute('evViewCart', function(payload) {
+    eedl('view_cart', payload);
+  })(window._mp_cart);
+      
+{% elsif template.name == 'search' %}
+  try {
+    var data = {
+      search_term: "{{ search.terms }}",
+      search_result_count: {{ search.results_count }},
+    }
+  } catch (e){}
+  window._mp.safeExecute('evSearch', function(payload) {
+    eedl('search', payload);
+  })(data);
+{% endif %}
+
+});
+
+  function formatItemObject(product) {
+    return {
+      index: 0,
+      item_id: [product.product_id, product.sku, product.variant_id][window.MP_ID_TYPE],
+      item_name: product.title,
+      item_brand: product.vendor,
+      item_category: product.product_type,
+      price: parseFloat((product.price/100).toFixed(2)),
+      quantity: product.quantity,
+    };
+  }
+
+  function addedToCart(product, oldQty = 0) {
+    let item = formatItemObject(product);
+    item.quantity = item.quantity-oldQty;
+    var addtocartPayload = {
+      currency: window._mp_cart.currency,
+      value: parseFloat((product.final_price/100).toFixed(2) * (item.quantity - oldQty)),
+      items: [
+        item
+      ],
+    };
+    
+    window._mp.safeExecute('evAddToCart', function(payload) {
+      eedl('add_to_cart', payload);
+    })(addtocartPayload);
+    getLatestCart();
+  }
+
+  function removedFromCart(price, products) {
+    var removeFromCartPayload = {
+      currency: window._mp_cart.currency,
+      value: parseFloat(price),
+      items: products
+    };
+    window._mp.safeExecute('evRemoveFromCart', async function(payload) {
+      await eedl('remove_from_cart', payload);
+    })(removeFromCartPayload);
+
+    getLatestCart();
+    return;
+  }
+
+  function findCartDiff(prevCart, items = []) {
+    if (!prevCart.items) {
+      return;
+    }
+    if (!items) {
+      removedFromCart(prevCart.value, prevCart.items);
+      return ;
+    }
+    prevCart.items.forEach(function (p) {
+      var item = findProductInNewCart(p.item_id, items);
+      if (!item) {
+        removedFromCart(parseFloat(p.price * p.quantity), [p]);
+      } else if (item.quantity < p.quantity) {
+        var effectedQuantity = p.quantity - item.quantity;
+        p.quantity = effectedQuantity;
+        removedFromCart(parseFloat(p.price * effectedQuantity), [p]);
+      } else if (p.quantity < item.quantity) {
+        addedToCart(item, p.quantity);
+      }
+    });
+  }
+  
+  function findProductInNewCart(id, products) {
+    return products.find((p) => (p.item_id ?? p.id)==id );
+  }
+
+  function getLatestCart() {
+    fetch(window.Shopify.routes.root + 'cart.js', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(response => {
+      return response.json();
+    }).then (cart => {
+      let items = [];
+      cart.items.forEach(function(i, index) {
+        var item = {
+          index: index,
+          item_brand: i.vendor,
+          item_category: i.product_type,
+          item_id: [i.product_id, i.sku, i.variant_id][window.MP_ID_TYPE],
+          item_name: i.product_title,
+          price: parseFloat((i.final_price / 100).toFixed(2)),
+          quantity: i.quantity
+        }
+        items.push(item);
+      });
+      window._mp_cart = {
+        currency: cart.currency,
+        value: parseFloat((cart.total_price / 100).toFixed(2)), 
+        items: items
+      }
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
+  }
+
+// track cart changes
+  (function(ns, fetch) {
+    if (typeof fetch !== 'function') return;
+
+    ns.fetch = function() {
+        const response = fetch.apply(this, arguments);
+
+        response.then(res => {
+            // if ([
+            //         `${window.location.origin}/cart/add`,
+            //         `${window.location.origin}/cart/update`,
+            //         `${window.location.origin}/cart/change`,
+            //         `${window.location.origin}/cart/clear`,
+            //     ].includes(res.url)) {
+            //     res.clone().json().then(data => console.log(data)); 
+            // }
+          if (res.status == 200) {
+            if (res.url == `${window.location.origin}/cart/add` || res.url == `${window.location.origin}/cart/add.js`) {
+              res.clone().json().then(product => addedToCart(product));
+            } else if(res.url == `${window.location.origin}/cart/change` || res.url == `${window.location.origin}/cart/change.js`) {
+              body = JSON.parse(arguments[1].body);
+              var item = window._mp_cart.items[body.line - 1];
+              if (body.quantity == 0) {
+                removedFromCart((parseFloat(item.price) * parseInt(item.quantity)).toFixed(2), [item]);
+              } else if (body.quantity < item.quantity) {
+                removedFromCart(parseFloat((item.price * (parseInt(item.quantity)-parseInt(body.quantity))).toFixed(2)), [item]);
+              } else if (body.quantity < item.quantity) {
+                addedToCart(item, parseInt(body.quantity));
+              }
+            }
+          }
+        });
+        return response;
+    }
+
+}(window, window.fetch))
+
+
+var oldXHR = window.XMLHttpRequest;
+function newXHR() {
+    var realXHR = new oldXHR();
+    realXHR.addEventListener("readystatechange", function() {
+        if(realXHR.readyState==4 && realXHR.status==200){
+          if (realXHR.responseURL == `${window.location.origin}/cart/add.js` || realXHR.responseURL == `${window.location.origin}/cart/add`)  {
+            let product = JSON.parse(realXHR.response);
+            addedToCart(product);
+          } else if (realXHR.responseURL == `${window.location.origin}/cart/change.js` || realXHR.responseURL == `${window.location.origin}/cart/change`) {
+            findCartDiff(window._mp_cart, JSON.parse(realXHR.response).items);
+          }
+        }
+    }, false);
+    return realXHR;
+}
+window.XMLHttpRequest = newXHR;
+
+</script>

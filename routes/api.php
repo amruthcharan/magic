@@ -21,4 +21,10 @@ Route::group(['prefix' => 'shopify'], function () {
     Route::post('/{shopId}/new-checkout', [ShopifyWebhookController::class, 'newCheckout'])->name(
         'shopify.new-checkout'
     );
+    Route::post('/{shopId}/app-uninstalled', [ShopifyWebhookController::class, 'appUninstalled'])->name(
+        'shopify.app-uninstalled'
+    );
+    Route::post('/{shopId}/theme-changed', [ShopifyWebhookController::class, 'themeChanged'])->name(
+        'shopify.theme-changed'
+    );
 });

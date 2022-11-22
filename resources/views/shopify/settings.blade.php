@@ -141,30 +141,6 @@
                         </div>
 
                         <div class="form-group row mb-3">
-                            <label for="default_country_code" class="col-sm-3 col-form-label text-end">Default Currency Code</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control @error('default_country_code') is-invalid @enderror" id="default_country_code" name="default_country_code" value="{{ old('default_country_code') ?? $shop->settings->default_country_code ?? 'US' }}">
-                            </div>
-                            @error('default_country_code')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group row mb-3">
-                            <label for="default_currency_code" class="col-sm-3 col-form-label text-end">Default Country Code</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control @error('default_currency_code') is-invalid @enderror" id="default_currency_code" name="default_currency_code" value="{{ old('default_currency_code') ?? $shop->settings->default_currency_code ?? 'USD' }}">
-                            </div>
-                            @error('default_currency_code')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group row mb-3">
                             <label for="id_type" class="col-sm-3 col-form-label text-end">Default Product ID</label>
                             <div class="col-sm-9">
                                 <select class="form-select" name="id_type" id="id_type">

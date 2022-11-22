@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SetupUninstallWebhook;
 use App\Models\Shop;
 use App\Services\Shopify;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class ShopifyController extends Controller
         $shop = Shop::where('shopify_url', request()->get('shop'))->first();
         
         // if shop is not in database, redirect to install
-        if (!$shop) {
+        if (!$shop  || !$shop->access_token) {
             return redirect($this->shopifyService->getInstallUrl(request()->get('shop')));
         }
 
@@ -42,7 +43,7 @@ class ShopifyController extends Controller
 
         $shop = Shop::where('shopify_url', $shop_url)->first();
 
-        if (!$shop) {
+        if (!$shop || !$shop->access_token) {
             // get the access token
             try {
                 $token = $this->shopifyService->getAccessToken($shop_url, request()->get('code'));
@@ -51,19 +52,14 @@ class ShopifyController extends Controller
             }
 
             // create or update the shop
-            $shop = Shop::create([
-                    'shopify_url' => $shop_url,
-                    'access_token' => $token
-                ]);
-            $shop->settings()->create([
-                'shop_id' => $shop->id
-            ]);
+            $shop = Shop::updateOrCreate(
+                    ['shopify_url' => $shop_url],
+                    ['access_token' => $token]
+                );
+            $shop->settings()->updateOrCreate(['shop_id' => $shop->id]);
 
-            // add event to insert scripts to shopify store
-            // event(new \App\Events\Shopify\InstallScripts($shop));
-
-            // event to insert webhooks to shopify store
-            event(new \App\Events\SetupWebhooks($shop));
+            // setup uninstall webhook
+            dispatch(new SetupUninstallWebhook($shop));
         }
 
         authenticateShop($shop);

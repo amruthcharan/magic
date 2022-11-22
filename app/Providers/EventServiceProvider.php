@@ -22,6 +22,18 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\SetupWebhooks::class => [
             \App\Listeners\SetupWebhooksListener::class,
         ],
+
+        \App\Events\SetupScripts::class => [
+            \App\Listeners\SetupScriptsListener::class,
+        ],
+
+        \App\Events\RemoveScripts::class => [
+            \App\Listeners\RemoveScriptsListener::class,
+        ],
+
+        \App\Events\RemoveWebhooks::class => [
+            \App\Listeners\RemoveWebhooksListener::class,
+        ],
     ];
 
     /**

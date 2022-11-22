@@ -13,6 +13,7 @@ const mix = require('laravel-mix');
 
 mix.js('resources/js/bootstrap.bundle.min.js', 'public/js/bootstrap.bundle.min.js')
     .js('resources/js/main.js', 'public/js/main.js')
+    .copy('resources/mp/js/', 'public/storage/shopify/')
     .postCss('resources/css/bootstrap.min.css', 'public/css/bootstrap.min.css')
     .postCss('resources/css/main.css', 'public/css/main.css')
     .postCss('resources/css/lineicons.css', 'public/css/lineicons.css')
