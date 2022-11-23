@@ -85,7 +85,7 @@ class Shop extends Model
             $shopifyClient->addFile($data, 'snippets/mp-header.liquid');
     
             // update idl.js file
-            $newData = $this->getUpdatedFile(file_get_contents(public_path("storage/shopify/idl.js")));
+            $newData = $this->getUpdatedFile(file_get_contents(base_path("resources/mp/js/idl.js")));
             if (!file_exists(storage_path('app/public/shopify'. $this->shopify_url))) {
                 mkdir(storage_path('app/public/shopify'. $this->shopify_url), 0755, true);
             }
