@@ -29,7 +29,7 @@
           <div class="signin-wrapper">
             <div class="form-wrapper">
               <div class="w-100">
-                <img src="{{ asset('images/mp.png') }}" class="d-block mx-auto mb-3" alt="Magic Pixel">
+                <img src="{{ asset('images/MP.png') }}" class="d-block mx-auto mb-3" alt="Magic Pixel">
               </div>
               <form action="{{ route('login') }}" method="POST">
                 @csrf

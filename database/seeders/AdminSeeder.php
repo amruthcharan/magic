@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
@@ -13,10 +14,13 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\User::factory()->create([
+        User::firstOrCreate([
             'name' => 'Admin',
             'email' => 'admin@magicpixel.com',
-            'is_super_admin' => true,
+            'password' => bcrypt('password'),
+            'is_super_admin' => true
         ]);
+
+        return;
     }
 }
